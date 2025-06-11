@@ -1,10 +1,15 @@
 📍 Google Maps Email Scraper
-Automation to extract business email addresses from Google Maps listings:
+An automated lead generation workflow that collects business emails directly from Google Maps listings.
 
-Extracts listings via API.
+How it works:
 
-Filters out unwanted and unnecessary domains.
+Sends HTTP requests to Google Maps and extracts company URLs.
 
-Exports structured data to spreadsheets.
-Ideal for marketers, ad campaigns or SMB data enrichment.
-🔗 Technologies: Google Sheets, Python.
+A lightweight Python script visits each website to detect and extract valid email addresses.
+
+All collected emails are automatically stored in a structured Google Sheet.
+
+✅ Great for outreach, prospecting, and small business data enrichment.
+
+Tech stack:
+n8n · Python · Google Maps · HTTP API · Google Sheets
