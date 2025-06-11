@@ -73,5 +73,5 @@ TattooCraft | kontakt@tattoocraft.de | https://tattoocraft.de | Berlin
 
 ## 📬 Contact
 
-Created by [Serhii Litus](https://www.upwork.com/freelancers//~016b54c2291f96bd7d)  
+Created by [Serhii Litus](https://www.upwork.com/freelancers/~016b54c2291f96bd7d)  
 Let me help you build lead gen workflows that scale 🚀
