@@ -1,0 +1,529 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "506563b2-4857-4cab-91da-e780b576f861",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://www.google.com/maps/search/hannover+pizza",
+        "options": {
+          "allowUnauthorizedCerts": true,
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "096d53a4-e0cc-4382-ac1b-4619130ecd06",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "import re\nfrom urllib.parse import urlparse\n\n# Берем HTML из input\nhtml = items[0]['json']['data']\n\n# Ищем все https-ссылки\nlinks = re.findall(r'https?://[^\\s\"<>]+', html)\n\n# Удаляем дубликаты\nunique_links = list(set(links))\n\n# Функция для извлечения домена\ndef extract_domain(url):\n    parsed = urlparse(url)\n    return parsed.netloc.lower()\n\n# Очищаем домены, исключаем мусорные ссылки\nfiltered_domains = [\n    extract_domain(link)\n    for link in unique_links\n    if 'google' not in link and 'gstatic' not in link and '.js' not in link and 'maps.' not in link\n]\n\n# Убираем дубликаты после парсинга\nfinal_domains = list(set(filtered_domains))\n\n# Возвращаем каждый домен как отдельный item\nreturn [{\"json\": {\"domain\": domain}} for domain in final_domains]\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "8e6eec9c-b09f-4c68-80aa-88e581a55767",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "254f3e90-44dc-4b60-9ff7-755cedc6495c",
+              "leftValue": "={{ $json.website }}",
+              "rightValue": "schema",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "e24b7b50-99bd-46ed-b7db-c47c8725f128",
+              "leftValue": "={{ $json.website }}",
+              "rightValue": "google",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "f1b912b7-af54-4fd3-ae4f-ba16fe5d56e3",
+              "leftValue": "={{ $json.website }}",
+              "rightValue": "gg",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "3b3c60af-93a4-45d6-8409-f720a998eb8a",
+              "leftValue": "={{ $json.website }}",
+              "rightValue": "gstatic",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "773fc9c2-19b6-459b-8f37-2226c1201e5d",
+              "leftValue": "={{ $json.domain }}",
+              "rightValue": "ggpht",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "7d2fbd70-9ac5-4f29-abf2-4ca7e5d71d68",
+              "leftValue": "={{ $json.domain }}",
+              "rightValue": "facebook",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "d78c8021-c389-465f-9df4-7669a1088d71",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "8851805c-45bb-4fb1-bae7-065c91891c01",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1320,
+        0
+      ],
+      "id": "605e0f6a-1d0f-444b-b92f-351d1d069415",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://' + $json.domain }}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        20
+      ],
+      "id": "384c88b3-8057-4ed4-8569-7531fd8b82f1",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1760,
+        20
+      ],
+      "id": "82968340-8e13-4ef6-aa38-860cfa4fdf76",
+      "name": "Wait",
+      "webhookId": "16d36046-6b58-40b9-b706-6cb5eb60ade8"
+    },
+    {
+      "parameters": {
+        "maxItems": 3
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "f205e434-61a5-4ee2-903f-5a54afc8f2f5",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "import re\n\n# Получаем HTML из предыдущего шага (HTTP Request)\nhtml = items[0]['json']['data']\n\n# Используем регулярное выражение для поиска email'ов\nemails = re.findall(r\"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+\", html)\n\n# Удаляем дубликаты\nunique_emails = list(set(emails))\n\n# Возвращаем каждый email как отдельный item\nreturn [{\"json\": {\"email\": email}} for email in unique_emails]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1940,
+        20
+      ],
+      "id": "fba9e3e5-f92f-430b-a3fe-e5a4bd167df1",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1300,
+        -220
+      ],
+      "id": "55a4479e-bdf5-4fd8-bb7c-2491df37a0cc",
+      "name": "Wait1",
+      "webhookId": "15bac3ae-c502-4309-a1cb-77816403d530"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a8085bc6-6447-4735-bc5a-f770139587e2",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1520,
+        -220
+      ],
+      "id": "d2813afe-1ee2-42d2-b551-790932b75ec4",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "email",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1740,
+        -220
+      ],
+      "id": "2b8d4114-a912-4aaa-a9e5-4b809b898a31",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "emails = [item['json']['email'] for item in items]\n\n# Удаляем дубликаты без учёта регистра, но сохраняем оригинальное написание\nseen = set()\nresult = []\nfor email in emails:\n    if email.lower() not in seen:\n        seen.add(email.lower())\n        result.append(email)\n\nreturn [{\"json\": {\"email\": e}} for e in result]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1960,
+        -220
+      ],
+      "id": "83a9459b-0b96-4ac3-9dac-092cea8c535c",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1gjre4zRZw_3ViwQoSD9srER7id2npSaa7pTP1TnvgdE",
+          "mode": "list",
+          "cachedResultName": "Andrey_Emails",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gjre4zRZw_3ViwQoSD9srER7id2npSaa7pTP1TnvgdE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1gjre4zRZw_3ViwQoSD9srER7id2npSaa7pTP1TnvgdE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "emails": "={{ $json.email }}"
+          },
+          "matchingColumns": [
+            "emails"
+          ],
+          "schema": [
+            {
+              "id": "emails",
+              "displayName": "emails",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        2180,
+        -220
+      ],
+      "id": "261e04d8-bc9f-4141-b554-93f8f21ae934",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "OjHU6gvYuJ8p4pWU",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Code2": [
+      {
+        "email": "lukmanakuan@gmail.com"
+      },
+      {
+        "email": "identica.info@gmail.com"
+      },
+      {
+        "email": "info@lavita-hannover.de"
+      },
+      {
+        "email": "info@casa-mia-hannover.de"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4a5f758c8f9630703668d06d430991b9c6805ececc8b1949050c44f19f7c0eb9"
+  }
+}
